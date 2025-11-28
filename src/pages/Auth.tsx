@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -11,11 +11,29 @@ import { useAppDispatch } from '@/store/hooks';
 import { loginSuccess } from '@/store/slices/authSlice';
 import { toast } from 'sonner';
 import { GraduationCap } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Auth() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        dispatch(loginSuccess({
+          id: user.id,
+          email: user.email!,
+          name: user.user_metadata?.name || user.email!.split('@')[0],
+          role: (user.user_metadata?.role || 'student') as 'student' | 'faculty' | 'admin',
+        }));
+        navigate('/dashboard');
+      }
+    };
+    checkUser();
+  }, [dispatch, navigate]);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,21 +41,31 @@ export default function Auth() {
     
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
     
-    // Mock login - replace with actual API call
-    setTimeout(() => {
-      const mockUser = {
-        id: '1',
-        email,
-        name: email.split('@')[0],
-        role: 'student' as const,
-      };
-      
-      dispatch(loginSuccess(mockUser));
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      toast.error(error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    if (data.user) {
+      dispatch(loginSuccess({
+        id: data.user.id,
+        email: data.user.email!,
+        name: data.user.user_metadata?.name || email.split('@')[0],
+        role: (data.user.user_metadata?.role || 'student') as 'student' | 'faculty' | 'admin',
+      }));
       toast.success('Login successful!');
       navigate('/dashboard');
-      setIsLoading(false);
-    }, 1000);
+    }
+    
+    setIsLoading(false);
   };
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -46,22 +74,39 @@ export default function Auth() {
     
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const name = formData.get('name') as string;
     const role = formData.get('role') as string;
     
-    // Mock signup - replace with actual API call
-    setTimeout(() => {
-      const mockUser = {
-        id: '1',
-        email,
-        name: formData.get('name') as string,
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+          role,
+        },
+      },
+    });
+
+    if (error) {
+      toast.error(error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    if (data.user) {
+      dispatch(loginSuccess({
+        id: data.user.id,
+        email: data.user.email!,
+        name,
         role: role as 'student' | 'faculty' | 'admin',
-      };
-      
-      dispatch(loginSuccess(mockUser));
+      }));
       toast.success('Account created successfully!');
       navigate('/dashboard');
-      setIsLoading(false);
-    }, 1000);
+    }
+    
+    setIsLoading(false);
   };
 
   return (

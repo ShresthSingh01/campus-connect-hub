@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useAppSelector } from '@/store/hooks';
+import { useNotifications } from '@/hooks/useNotifications';
 import { Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Settings() {
   const user = useAppSelector(state => state.auth.user);
+  const { preferences, updatePreferences } = useNotifications();
   const [isDark, setIsDark] = useState(false);
 
   const toggleTheme = () => {
@@ -78,32 +80,72 @@ export default function Settings() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="announcements">Announcements</Label>
+              <Label htmlFor="push">Push Notifications</Label>
               <p className="text-sm text-muted-foreground">
-                Receive updates for new announcements
+                Receive in-app toast notifications
               </p>
             </div>
-            <Switch id="announcements" defaultChecked />
+            <Switch 
+              id="push" 
+              checked={preferences?.push_notifications ?? true}
+              onCheckedChange={(checked) => updatePreferences({ push_notifications: checked })}
+            />
           </div>
           <Separator />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="bookings">Booking Reminders</Label>
+              <Label htmlFor="email">Email Notifications</Label>
               <p className="text-sm text-muted-foreground">
-                Get notified before your bookings
+                Receive notifications via email
               </p>
             </div>
-            <Switch id="bookings" defaultChecked />
+            <Switch 
+              id="email" 
+              checked={preferences?.email_notifications ?? false}
+              onCheckedChange={(checked) => updatePreferences({ email_notifications: checked })}
+            />
           </div>
           <Separator />
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="forum">Forum Activity</Label>
+              <Label htmlFor="announcements">Announcement Notifications</Label>
               <p className="text-sm text-muted-foreground">
-                Notifications for replies and mentions
+                Get notified about new announcements
               </p>
             </div>
-            <Switch id="forum" defaultChecked />
+            <Switch 
+              id="announcements" 
+              checked={preferences?.announcements_enabled ?? true}
+              onCheckedChange={(checked) => updatePreferences({ announcements_enabled: checked })}
+            />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="bookings">Booking Notifications</Label>
+              <p className="text-sm text-muted-foreground">
+                Reminders for upcoming bookings
+              </p>
+            </div>
+            <Switch 
+              id="bookings" 
+              checked={preferences?.bookings_enabled ?? true}
+              onCheckedChange={(checked) => updatePreferences({ bookings_enabled: checked })}
+            />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="forum">Forum Notifications</Label>
+              <p className="text-sm text-muted-foreground">
+                Updates on replies and mentions
+              </p>
+            </div>
+            <Switch 
+              id="forum" 
+              checked={preferences?.forum_enabled ?? true}
+              onCheckedChange={(checked) => updatePreferences({ forum_enabled: checked })}
+            />
           </div>
         </CardContent>
       </Card>

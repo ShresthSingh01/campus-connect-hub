@@ -3,6 +3,7 @@ import { NavLink } from '@/components/NavLink';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logout } from '@/store/slices/authSlice';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Sidebar,
   SidebarContent,
@@ -36,7 +37,8 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
   const isExpanded = menuItems.some(item => isActive(item.url));
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     dispatch(logout());
     navigate('/auth');
   };

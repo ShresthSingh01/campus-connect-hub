@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Plus, Pin, Calendar } from 'lucide-react';
+import { TestNotificationButton } from '@/components/notifications/TestNotificationButton';
 
 const mockAnnouncements = [
   {
@@ -69,10 +70,13 @@ export default function Announcements() {
           <h2 className="text-3xl font-bold">Announcements</h2>
           <p className="text-muted-foreground mt-1">Stay updated with campus news</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          New Announcement
-        </Button>
+        <div className="flex gap-2">
+          <TestNotificationButton />
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            New Announcement
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
